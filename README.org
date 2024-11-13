@@ -2,7 +2,6 @@
 :ID:       81D0C3EF-6949-4B30-BD96-CFD893AA4389
 :END:
 #+title: git-commit-jira.el
-* git-commit-jira.el
 ** Description
 An [[id:6253221B-8819-4BA6-A0F9-145284E7B979][Emacs]] package to automatically add [[id:BA77123D-38FD-4E5E-BB4A-C43CA044B69E][JIRA]] tickets in =git-commit= buffers.
 
