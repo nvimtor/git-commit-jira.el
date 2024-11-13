@@ -1,4 +1,4 @@
-* git-commit-jira
+* git-commit-jira.el
 ** TODO Description
 
 ** Code
