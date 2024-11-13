@@ -1,0 +1,99 @@
+* git-commit-jira
+** TODO Description
+
+** Code
+:PROPERTIES:
+:header-args: :tangle git-commit-jira.el
+:END:
+
+Some licensing bullshit:
+
+#+begin_src emacs-lisp
+;;; git-commit-jira.el --- Automatically insert JIRA tickets in git commits -*- lexical-binding: t -*-
+
+;; Copyright (C) 2023  Vitor Leal
+
+;; Author: Vitor Leal <hellofromvitor@gmail.com>
+;; URL: https://example.com/your-repo
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "25.1") (magit "2.90.0"))
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;
+;; The git-commit-jira package automatically inserts JIRA ticket identifiers
+;; into git commit messages based on the current branch name.
+;;
+
+;;; Code:
+#+end_src
+
+  Let's start by creating a customization group.
+
+  #+begin_src emacs-lisp
+    (defgroup git-commit-jira nil
+      "Customization group for the git-commit-jira package."
+      :group 'tools
+      :prefix "git-commit-jira-")
+#+end_src
+
+Define a [[id:8B604406-8818-4503-BD9B-8AF01C2718BE][Regular expression]] that matches JIRA tickets.
+
+#+begin_src emacs-lisp
+  (defcustom git-commit-jira-ticket-regex "\\[[A-Za-z]+-[0-9]+\\]"
+    "Regex pattern used to match JIRA ticket identifiers in branch names and commit messages."
+    :type 'regexp
+    :group 'git-commit-jira)
+#+end_src
+
+This block defines a customizable function to retrieve the current branch name, defaulting to =magit-get-current-branch=.
+
+#+begin_src emacs-lisp
+  (defcustom git-commit-jira-get-branch-function #'magit-get-current-branch
+    "Function to retrieve the current branch name."
+    :type 'function
+    :group 'git-commit-jira)
+#+end_src
+
+This is the main function. It inserts the JIRA ticket identifier. It is pretty much the same as the one from gopar's [[https://www.youtube.com/watch?v=yP3mgt5hMyI][video]], but it checks if the current commit message already contains a JIRA ticket. This is especially useful for commit amends.
+
+#+begin_src emacs-lisp
+  (defun git-commit-jira-insert-ticket ()
+    (let ((ticket-regex git-commit-jira-ticket-regex)
+          (branch-name (funcall git-commit-jira-get-branch-function))
+          (commit-message (buffer-string)))
+      (unless (string-match ticket-regex commit-message)
+        (when (string-match ticket-regex branch-name)
+          (let ((words (s-split-words branch-name)))
+            (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
+#+end_src
+
+The minor mode.
+
+#+begin_src emacs-lisp
+  (define-minor-mode git-commit-jira-mode
+    "Minor mode to automatically insert JIRA ticket in git commit messages."
+    :global nil
+    (if git-commit-jira-mode
+        (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket nil t)
+      (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket t)))
+#+end_src
+
+** Todos
+*** TODO Write tests
+*** TODO Figure out if there is a built-in way to get the current branch with =vc=
+Maybe this can remove dependency from =magit=, although =git-commit= has been fused into =magit= anyway.
