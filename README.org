@@ -1,6 +1,11 @@
+:PROPERTIES:
+:ID:       81D0C3EF-6949-4B30-BD96-CFD893AA4389
+:END:
+#+title: git-commit-jira.el
 * git-commit-jira.el
 ** Description
 An [[id:6253221B-8819-4BA6-A0F9-145284E7B979][Emacs]] package to automatically add [[id:BA77123D-38FD-4E5E-BB4A-C43CA044B69E][JIRA]] tickets in =git-commit= buffers.
+
 ** Code
 :PROPERTIES:
 :header-args: :tangle git-commit-jira.el
@@ -16,7 +21,7 @@ Some licensing bullshit:
 ;; Author: Vitor Leal <hellofromvitor@gmail.com>
 ;; URL: https://example.com/your-repo
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "25.1") (magit "2.90.0"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -61,18 +66,26 @@ Define a [[id:8B604406-8818-4503-BD9B-8AF01C2718BE][Regular expression]] that ma
 #+end_src
 
 This block defines a customizable function to retrieve the current branch name, defaulting to =magit-get-current-branch=.
-
 #+begin_src emacs-lisp
-  (defcustom git-commit-jira-get-branch-function #'magit-get-current-branch
-    "Function to retrieve the current branch name."
-    :type 'function
-    :group 'git-commit-jira)
+  (defun git-commit-jira-vc-current-branch ()
+    "Get the current git branch using VC."
+    (car (vc-git-branches)))
+#+end_src
+
+And this going to be our default function.
+
+  #+begin_src emacs-lisp
+    (defcustom git-commit-jira-get-branch-function #'git-commit-jira-vc-current-branch
+      "Function to retrieve the current branch name."
+      :type 'function
+      :group 'git-commit-jira)
 #+end_src
 
 This is the main function. It inserts the JIRA ticket identifier. It is pretty much the same as the one from gopar's [[https://www.youtube.com/watch?v=yP3mgt5hMyI][video]], but it checks if the current commit message already contains a JIRA ticket. This is especially useful for commit amends.
 
 #+begin_src emacs-lisp
   (defun git-commit-jira-insert-ticket ()
+"Insert a JIRA ticket identifier from the branch name into the commit message if not already present."
     (let ((ticket-regex git-commit-jira-ticket-regex)
           (branch-name (funcall git-commit-jira-get-branch-function))
           (commit-message (buffer-string)))
@@ -93,7 +106,21 @@ The minor mode.
       (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket t)))
 #+end_src
 
+Provide the package.
+#+begin_src emacs-lisp
+  (provide 'git-commit-jira)
+
+  ;;; git-commit-jira.el ends here
+#+end_src
+
 ** Todos
 *** TODO Write tests
-*** TODO Figure out if there is a built-in way to get the current branch with =vc=
-Maybe this can remove dependency from =magit=, although =git-commit= has been fused into =magit= anyway.
+*** DONE Figure out if there is a built-in way to get the current branch with =vc=
+CLOSED: [2024-11-13 Wed 23:44]
++Maybe this can remove dependency from =magit=, although =git-commit= has been fused into =magit= anyway.+
+
+#+begin_src emacs-lisp
+(car (vc-git-branches))
+#+end_src
+
+According to this [[id:07708142-7D83-454F-9B77-D27E51D62B87][StackOverflow]] [[https://emacs.stackexchange.com/questions/61837/how-to-query-the-name-of-the-current-branch-in-an-elisp-function][post]], =vc-git-branches= will always return the current branch as the first element.

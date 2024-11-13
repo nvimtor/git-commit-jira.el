@@ -5,7 +5,7 @@
 ;; Author: Vitor Leal <hellofromvitor@gmail.com>
 ;; URL: https://example.com/your-repo
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "25.1") (magit "2.90.0"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -40,19 +40,24 @@
   :type 'regexp
   :group 'git-commit-jira)
 
-(defcustom git-commit-jira-get-branch-function #'magit-get-current-branch
+(defun git-commit-jira-vc-current-branch ()
+  "Get the current git branch using VC."
+  (car (vc-git-branches)))
+
+(defcustom git-commit-jira-get-branch-function #'git-commit-jira-vc-current-branch
   "Function to retrieve the current branch name."
   :type 'function
   :group 'git-commit-jira)
 
 (defun git-commit-jira-insert-ticket ()
-  (let ((ticket-regex git-commit-jira-ticket-regex)
-        (branch-name (funcall git-commit-jira-get-branch-function))
-        (commit-message (buffer-string)))
-    (unless (string-match ticket-regex commit-message)
-      (when (string-match ticket-regex branch-name)
-        (let ((words (s-split-words branch-name)))
-          (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
+"Insert a JIRA ticket identifier from the branch name into the commit message if not already present."
+    (let ((ticket-regex git-commit-jira-ticket-regex)
+          (branch-name (funcall git-commit-jira-get-branch-function))
+          (commit-message (buffer-string)))
+      (unless (string-match ticket-regex commit-message)
+        (when (string-match ticket-regex branch-name)
+          (let ((words (s-split-words branch-name)))
+            (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
 
 (define-minor-mode git-commit-jira-mode
   "Minor mode to automatically insert JIRA ticket in git commit messages."
@@ -60,3 +65,7 @@
   (if git-commit-jira-mode
       (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket nil t)
     (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket t)))
+
+(provide 'git-commit-jira)
+
+;;; git-commit-jira.el ends here
