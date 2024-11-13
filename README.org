@@ -1,6 +1,6 @@
 * git-commit-jira.el
-** TODO Description
-
+** Description
+An [[id:6253221B-8819-4BA6-A0F9-145284E7B979][Emacs]] package to automatically add [[id:BA77123D-38FD-4E5E-BB4A-C43CA044B69E][JIRA]] tickets in =git-commit= buffers.
 ** Code
 :PROPERTIES:
 :header-args: :tangle git-commit-jira.el
