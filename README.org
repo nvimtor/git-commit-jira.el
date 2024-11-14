@@ -136,16 +136,15 @@ Let's extend what we currently have by allowing users to optionally control the 
     :type 'boolean
     :group 'git-commit-jira)
 
-  (defun git-commit-jira-uppercase-advice (func &rest args)
-    "Advice to conditionally uppercase the inserted JIRA ticket."
-    (let ((start (point))
-          (end (line-end-position)))
-      (apply func args)
-      (when git-commit-jira-uppercase-ticket
-        (save-excursion
-          (goto-char start)
-          (while (re-search-forward git-commit-jira-ticket-regex-brackets end t)
-            (replace-match (upcase (match-string 0))))))))
+(defun git-commit-jira-uppercase-advice (func &rest args)
+  "Advice to conditionally uppercase the inserted JIRA ticket."
+  (let ((start (point)))
+    (apply func args)
+    (when git-commit-jira-uppercase-ticket
+      (save-excursion
+        (goto-char start)
+        (while (re-search-forward git-commit-jira-ticket-regex-brackets nil t)
+          (replace-match (upcase (match-string 0)) t))))))
 
   (advice-add 'git-commit-jira-insert-ticket :around #'git-commit-jira-uppercase-advice)
 #+end_src
