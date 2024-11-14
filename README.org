@@ -70,13 +70,20 @@ Originally, this was done using the =s= library's =s-split-words=, but as it is 
       :prefix "git-commit-jira-")
 #+end_src
 
-Define a [[id:8B604406-8818-4503-BD9B-8AF01C2718BE][Regular expression]] that matches JIRA tickets.
+Define a [[id:8B604406-8818-4503-BD9B-8AF01C2718BE][Regular expression]] that matches JIRA tickets. We need one to match it in brackets (for commit messages), and one without (for branch names).
+
 
 #+begin_src emacs-lisp
-  (defcustom git-commit-jira-ticket-regex "\\[[A-Za-z]+-[0-9]+\\]"
-    "Regex pattern used to match JIRA ticket identifiers in branch names and commit messages."
-    :type 'regexp
-    :group 'git-commit-jira)
+(defcustom git-commit-jira-ticket-regex-brackets "\\[[A-Za-z]+-[0-9]+\\]"
+  "Regex pattern used to match JIRA ticket identifiers that are wrapped in brackets, e.g., [ABC-123]."
+  :type 'regexp
+  :group 'git-commit-jira)
+
+(defcustom git-commit-jira-ticket-regex-nobrackets "\\([A-Za-z]+-[0-9]+\\)"
+  "Regex pattern used to match JIRA ticket identifiers that are not wrapped in brackets, e.g., ABC-123."
+  :type 'regexp
+  :group 'git-commit-jira)
+
 #+end_src
 
 This block defines a function to retrieve the current branch name, using =vc=.
@@ -90,7 +97,7 @@ This block defines a function to retrieve the current branch name, using =vc=.
 And this going to be the default function.
 
   #+begin_src emacs-lisp
-    (defcustom git-commit-jira-get-branch-function #'git-commit-jira-vc-current-branch
+    (defcustom git-commit-jira-get-current-branch-function #'git-commit-jira-vc-current-branch
       "Function to retrieve the current branch name."
       :type 'function
       :group 'git-commit-jira)
@@ -99,15 +106,14 @@ And this going to be the default function.
 This is the main function. It inserts the JIRA ticket identifier. It is pretty much the same as the one from gopar's [[https://www.youtube.com/watch?v=yP3mgt5hMyI][video]], but it checks if the current commit message already contains a JIRA ticket. This is especially useful for commit amends.
 
 #+begin_src emacs-lisp
-  (defun git-commit-jira-insert-ticket ()
-"Insert a JIRA ticket identifier from the branch name into the commit message if not already present."
-    (let ((ticket-regex git-commit-jira-ticket-regex)
-          (branch-name (funcall git-commit-jira-get-branch-function))
-          (commit-message (buffer-string)))
-      (unless (string-match ticket-regex commit-message)
-        (when (string-match ticket-regex branch-name)
-          (let ((words (git-commit-jira-split-words branch-name)))
-            (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
+    (defun git-commit-jira-insert-ticket ()
+  "Insert a JIRA ticket identifier from the branch name into the commit message if not already present."
+      (let ((branch-name (funcall git-commit-jira-get-current-branch-function))
+            (commit-message (buffer-string)))
+        (unless (string-match git-commit-jira-ticket-regex-brackets commit-message)
+          (when (string-match git-commit-jira-ticket-regex-nobrackets branch-name)
+            (let ((words (git-commit-jira-split-words branch-name)))
+              (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
 #+end_src
 
 The minor mode.

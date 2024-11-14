@@ -42,8 +42,13 @@
   :group 'tools
   :prefix "git-commit-jira-")
 
-(defcustom git-commit-jira-ticket-regex "\\[[A-Za-z]+-[0-9]+\\]"
-  "Regex pattern used to match JIRA ticket identifiers in branch names and commit messages."
+(defcustom git-commit-jira-ticket-regex-brackets "\\[[A-Za-z]+-[0-9]+\\]"
+  "Regex pattern used to match JIRA ticket identifiers that are wrapped in brackets, e.g., [ABC-123]."
+  :type 'regexp
+  :group 'git-commit-jira)
+
+(defcustom git-commit-jira-ticket-regex-nobrackets "\\([A-Za-z]+-[0-9]+\\)"
+  "Regex pattern used to match JIRA ticket identifiers that are not wrapped in brackets, e.g., ABC-123."
   :type 'regexp
   :group 'git-commit-jira)
 
@@ -51,18 +56,17 @@
   "Get the current git branch using VC."
   (car (vc-git-branches)))
 
-(defcustom git-commit-jira-get-branch-function #'git-commit-jira-vc-current-branch
+(defcustom git-commit-jira-get-current-branch-function #'git-commit-jira-vc-current-branch
   "Function to retrieve the current branch name."
   :type 'function
   :group 'git-commit-jira)
 
 (defun git-commit-jira-insert-ticket ()
 "Insert a JIRA ticket identifier from the branch name into the commit message if not already present."
-    (let ((ticket-regex git-commit-jira-ticket-regex)
-          (branch-name (funcall git-commit-jira-get-branch-function))
+    (let ((branch-name (funcall git-commit-jira-get-current-branch-function))
           (commit-message (buffer-string)))
-      (unless (string-match ticket-regex commit-message)
-        (when (string-match ticket-regex branch-name)
+      (unless (string-match git-commit-jira-ticket-regex-brackets commit-message)
+        (when (string-match git-commit-jira-ticket-regex-nobrackets branch-name)
           (let ((words (git-commit-jira-split-words branch-name)))
             (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
 
