@@ -57,8 +57,8 @@ Originally, this was done using the =s= library's =s-split-words=, but as it is 
 
 #+begin_src emacs-lisp
   (defun git-commit-jira-split-words (string)
-    "Split STRING into a list of words, using whitespace as the delimiter."
-    (split-string string "\\s-+"))
+      "Split STRING into a list of words, using non-word characters as delimiters."
+      (split-string string "[^[:word:]]+"))
 #+end_src
 
   Let's start by creating a customization group.
@@ -126,6 +126,28 @@ The minor mode.
     (if git-commit-jira-mode
         (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)
       (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)))
+#+end_src
+
+Let's extend what we currently have by allowing users to optionally control the case of the ticket.
+
+#+begin_src emacs-lisp
+  (defcustom git-commit-jira-uppercase-ticket t
+    "If non-nil, the JIRA ticket identifier will be converted to uppercase."
+    :type 'boolean
+    :group 'git-commit-jira)
+
+  (defun git-commit-jira-uppercase-advice (func &rest args)
+    "Advice to conditionally uppercase the inserted JIRA ticket."
+    (let ((start (point))
+          (end (line-end-position)))
+      (apply func args)
+      (when git-commit-jira-uppercase-ticket
+        (save-excursion
+          (goto-char start)
+          (while (re-search-forward git-commit-jira-ticket-regex-brackets end t)
+            (replace-match (upcase (match-string 0))))))))
+
+  (advice-add 'git-commit-jira-insert-ticket :around #'git-commit-jira-uppercase-advice)
 #+end_src
 
 Provide the package.

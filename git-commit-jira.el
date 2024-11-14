@@ -34,8 +34,8 @@
   (require 'vc-git))
 
 (defun git-commit-jira-split-words (string)
-  "Split STRING into a list of words, using whitespace as the delimiter."
-  (split-string string "\\s-+"))
+    "Split STRING into a list of words, using non-word characters as delimiters."
+    (split-string string "[^[:word:]]+"))
 
 (defgroup git-commit-jira nil
   "Customization group for the git-commit-jira package."
@@ -77,6 +77,24 @@
   (if git-commit-jira-mode
       (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)
     (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)))
+
+(defcustom git-commit-jira-uppercase-ticket t
+  "If non-nil, the JIRA ticket identifier will be converted to uppercase."
+  :type 'boolean
+  :group 'git-commit-jira)
+
+(defun git-commit-jira-uppercase-advice (func &rest args)
+  "Advice to conditionally uppercase the inserted JIRA ticket."
+  (let ((start (point))
+        (end (line-end-position)))
+    (apply func args)
+    (when git-commit-jira-uppercase-ticket
+      (save-excursion
+        (goto-char start)
+        (while (re-search-forward git-commit-jira-ticket-regex-brackets end t)
+          (replace-match (upcase (match-string 0))))))))
+
+(advice-add 'git-commit-jira-insert-ticket :around #'git-commit-jira-uppercase-advice)
 
 (provide 'git-commit-jira)
 
