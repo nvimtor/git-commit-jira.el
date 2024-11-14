@@ -46,9 +46,24 @@ Some licensing bullshit:
 ;;; Code:
 #+end_src
 
+Require dependencies. =eval-when-compile= is used to load a library only during the compilation of this code, rather than at runtime.
+
+#+begin_src emacs-lisp
+  (eval-when-compile
+    (require 'vc-git))
+  #+end_src
+
+Originally, this was done using the =s= library's =s-split-words=, but as it is a simple function, we will just define our own:
+
+#+begin_src emacs-lisp
+  (defun git-commit-jira-split-words (string)
+    "Split STRING into a list of words, using whitespace as the delimiter."
+    (split-string string "\\s-+"))
+#+end_src
+
   Let's start by creating a customization group.
 
-  #+begin_src emacs-lisp
+ #+begin_src emacs-lisp
     (defgroup git-commit-jira nil
       "Customization group for the git-commit-jira package."
       :group 'tools
@@ -91,7 +106,7 @@ This is the main function. It inserts the JIRA ticket identifier. It is pretty m
           (commit-message (buffer-string)))
       (unless (string-match ticket-regex commit-message)
         (when (string-match ticket-regex branch-name)
-          (let ((words (s-split-words branch-name)))
+          (let ((words (git-commit-jira-split-words branch-name)))
             (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
 #+end_src
 

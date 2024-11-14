@@ -30,6 +30,13 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'vc-git))
+
+(defun git-commit-jira-split-words (string)
+  "Split STRING into a list of words, using whitespace as the delimiter."
+  (split-string string "\\s-+"))
+
 (defgroup git-commit-jira nil
   "Customization group for the git-commit-jira package."
   :group 'tools
@@ -56,7 +63,7 @@
           (commit-message (buffer-string)))
       (unless (string-match ticket-regex commit-message)
         (when (string-match ticket-regex branch-name)
-          (let ((words (s-split-words branch-name)))
+          (let ((words (git-commit-jira-split-words branch-name)))
             (insert (format "[%s-%s] " (car words) (car (cdr words)))))))))
 
 (define-minor-mode git-commit-jira-mode
