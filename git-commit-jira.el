@@ -68,7 +68,8 @@
 
 (define-minor-mode git-commit-jira-mode
   "Minor mode to automatically insert JIRA ticket in git commit messages."
-  :global nil
+  :global t
+  :group 'git-commit-jira
   (if git-commit-jira-mode
       (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket nil t)
     (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket t)))
