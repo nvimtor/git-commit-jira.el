@@ -71,8 +71,8 @@
   :global t
   :group 'git-commit-jira
   (if git-commit-jira-mode
-      (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket nil t)
-    (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket t)))
+      (add-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)
+    (remove-hook 'git-commit-setup-hook #'git-commit-jira-insert-ticket)))
 
 (provide 'git-commit-jira)
 
