@@ -18,7 +18,7 @@ Some licensing bullshit:
 ;; Copyright (C) 2023  Vitor Leal
 
 ;; Author: Vitor Leal <hellofromvitor@gmail.com>
-;; URL: https://example.com/your-repo
+;; URL: https://github.com/nvimtor/git-commit-jira.el
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -64,14 +64,15 @@ Define a [[id:8B604406-8818-4503-BD9B-8AF01C2718BE][Regular expression]] that ma
     :group 'git-commit-jira)
 #+end_src
 
-This block defines a customizable function to retrieve the current branch name, defaulting to =magit-get-current-branch=.
+This block defines a function to retrieve the current branch name, using =vc=.
+
 #+begin_src emacs-lisp
   (defun git-commit-jira-vc-current-branch ()
     "Get the current git branch using VC."
     (car (vc-git-branches)))
 #+end_src
 
-And this going to be our default function.
+And this going to be the default function.
 
   #+begin_src emacs-lisp
     (defcustom git-commit-jira-get-branch-function #'git-commit-jira-vc-current-branch

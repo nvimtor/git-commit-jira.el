@@ -3,7 +3,7 @@
 ;; Copyright (C) 2023  Vitor Leal
 
 ;; Author: Vitor Leal <hellofromvitor@gmail.com>
-;; URL: https://example.com/your-repo
+;; URL: https://github.com/nvimtor/git-commit-jira.el
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "25.1"))
 
