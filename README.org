@@ -10,8 +10,6 @@ An [[id:6253221B-8819-4BA6-A0F9-145284E7B979][Emacs]] package to automatically a
 :header-args: :tangle git-commit-jira.el
 :END:
 
-Some licensing bullshit:
-
 #+begin_src emacs-lisp
 ;;; git-commit-jira.el --- Automatically insert JIRA tickets in git commits -*- lexical-binding: t -*-
 
